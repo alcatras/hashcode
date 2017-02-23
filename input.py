@@ -36,18 +36,27 @@ class Endpoint:
     def __init__(self, endpoint_id, latency):
         self.id = endpoint_id
         self.lag = latency
-        self.caches = dict()
+        self.caches = []
 
 
-if __name__ == "__main__":
-    lines = open(INPUT_FILE_PATH).read().splitlines()
+def print_endpoint_info(endpoints):
+    for e in endpoints:
+        print "Endpoint: ", e.id
+        print "\tLatency: ", e.lag
+        print "\tCache count: ", len(e.caches)
+        for c in e.caches:
+            print "\t\tCache: ", c.dest.id
+            print "\t\tLatency: ", c.lag
 
-    video_count, endpoint_count, req_descriptions, total_cache_count, cache_size = lines[0].split(' ')  # videos, endpoints, req descriptions, caches, size of cache
+def load_endpoint_data():
+    lines = open(INPUT_FILE_PATH).read().split('\n')
+
+    video_count, endpoint_count, req_descriptions, total_cache_count, cache_size = lines[0].split(
+        ' ')  # videos, endpoints, req descriptions, caches, size of cache
 
     videos = lines[1].split(' ')
     print videos
     lines = lines[2:]
-    print lines
     caches = []  # TODO:
     for c in range(0, int(total_cache_count)):
         caches.append(Cache(c, cache_size))
@@ -55,16 +64,20 @@ if __name__ == "__main__":
     endpoints = []
 
     for i in range(0, int(endpoint_count)):
+        lag, cache_count = lines[0].split()
 
-        lag, cache_count = lines[i].split(' ')
-        endpoints.append(Endpoint(i, lag))
+        e = Endpoint(i, lag)
+        endpoints.append(e)
         for j in range(0, int(cache_count)):
-            e_id, e_lag = lines[i+j].split(' ')
+            e_id, e_lag = lines[i + j + 1].split(' ')
+            e.caches.append(Connection(caches[int(e_id)], int(e_lag)))
 
-        lines = lines[i+int(cache_count)+1]
+        lines = lines[i + int(cache_count) + 1:]
+    return endpoints
 
-    for e in endpoints:
-        print "Endpoint: ", e.id
-        print "\tLatency: ", e.lag
-        print "\tCache count: ", len(e.caches)
+if __name__ == "__main__":
+
+    es = load_endpoint_data()
+    print_endpoint_info(es)
+
 
